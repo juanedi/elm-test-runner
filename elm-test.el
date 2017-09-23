@@ -53,8 +53,16 @@
 (defun elm-test-run ()
   "Run elm-test on the current buffer's file."
   (interactive)
-  (elm-test--run-single-file (buffer-file-name)
-                         elm-test-command-options))
+  (elm-test--run-single-file
+   (buffer-file-name)
+   elm-test-command-options))
+
+(defun elm-test-watch ()
+  "Run elm-test on the current buffer's file in watch mode."
+  (interactive)
+  (elm-test--run-single-file
+   (buffer-file-name)
+   (concat elm-test-command-options " --watch")))
 
 (defun elm-test--run-single-file (test-file &rest opts)
   "Run elm-test on SPEC_FILE with the specified options OPTS."
