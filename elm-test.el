@@ -43,6 +43,8 @@
   :type 'string
   :group 'elm-test)
 
+(defvar elm-test-find-project-root 'elm-test--project-root)
+
 (define-compilation-mode elm-test-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
   ;; (add-hook 'compilation-filter-hook 'elm-test--colorize-compilation-buffer nil t)
@@ -65,8 +67,8 @@
   (setq elm-test-last-directory default-directory
         elm-test-last-arguments (list target opts))
 
-  (let ((default-directory (or (elm-test--project-root)
-                               (locate-dominating-file (buffer-file-name) "script")
+  (let ((default-directory (or (apply elm-test-find-project-root ())
+                               (elm-test--project-root)
                                default-directory)))
     (compile
      (elm-test--compile-command target opts)
@@ -81,8 +83,14 @@
       (apply #'elm-test--compile elm-test-last-arguments))))
 
 (defun elm-test--project-root ()
-  ;; TODO
-  nil)
+  "Looks for the root of an elm project, assuming a directory structure in which
+the root contains a 'test' directory for elm-test stuff.
+It works by going up the directory hierarchy (starting at the current file)
+until we reach the first elm-package.json file (which would correspond to tests)
+and going up one more time to reach the root."
+  (let
+      ((elm-test-directory (locate-dominating-file (buffer-file-name) "elm-package.json")))
+    (file-name-directory (directory-file-name elm-test-directory))))
 
 (defun elm-test--compile-command (target &optional opts)
   "Composes elm-test command line for the compile function"
