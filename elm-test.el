@@ -58,8 +58,7 @@
 
 (defun elm-test--run-single-file (test-file &rest opts)
   "Run elm-test on SPEC_FILE with the specified options OPTS."
-  ;; TODO: equivalent to rspec-runner-target to fix quoting
-  (elm-test--compile test-file opts))
+  (elm-test--compile (shell-quote-argument test-file) opts))
 
 (defun elm-test--compile (target &optional opts)
   "Run a compile for TARGET with the specified options OPTS."
