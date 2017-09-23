@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017  Juan Edi
 
 ;; Author: Juan Edi
-;; Keywords: elm elm-tesst
+;; Keywords: elm elm-test
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
