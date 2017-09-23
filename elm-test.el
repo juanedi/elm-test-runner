@@ -29,6 +29,20 @@
 (require 'compile)
 (require 'ansi-color)
 
+(defgroup elm-test nil
+  "elm-test integration"
+  :group 'languages)
+
+(defcustom elm-test-command "elm-test"
+  "The command for elm-test."
+  :type 'string
+  :group 'elm-test)
+
+(defcustom elm-test-command-options nil
+  "Default options used with elm-test-command."
+  :type 'string
+  :group 'elm-test)
+
 (define-compilation-mode elm-test-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
   ;; (add-hook 'compilation-filter-hook 'elm-test--colorize-compilation-buffer nil t)
@@ -38,8 +52,7 @@
   "Run elm-test on the current buffer's file."
   (interactive)
   (elm-test--run-single-file (buffer-file-name)
-                         nil ;; do we need options?
-                         ))
+                         elm-test-command-options))
 
 (defun elm-test--run-single-file (test-file &rest opts)
   "Run elm-test on SPEC_FILE with the specified options OPTS."
@@ -73,14 +86,9 @@
 
 (defun elm-test--compile-command (target &optional opts)
   "Composes elm-test command line for the compile function"
-  (mapconcat 'identity `(,(elm-test--runner)
+  (mapconcat 'identity `(,elm-test-command
                          ,(elm-test--runner-options opts)
                          ,target) " "))
-
-(defun elm-test--runner ()
-  "Return command line to run elm-test."
-  ;; TODO: let us customize this via dir-locals to use ./script/elm-test
-  "./script/elm-test")
 
 (defun elm-test--runner-options (&optional opts)
   "Return string of options from OPTS for command line."
