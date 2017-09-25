@@ -6,7 +6,7 @@ Most functionality was ported from the fantastic [https://github.com/pezra/rspec
 
 ## Usage
 
-The following functions are available. No keybindings are provided yet, sorry :-)
+The following functions are available:
 
 Function                            | Description                                                                   |
 ------------------------------------|-------------------------------------------------------------------------------|
