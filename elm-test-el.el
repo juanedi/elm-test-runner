@@ -54,7 +54,7 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
 
 (define-compilation-mode elm-test-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
-  ;; (add-hook 'compilation-filter-hook 'elm-test--colorize-compilation-buffer nil t)
+  (add-hook 'compilation-filter-hook 'elm-test-colorize-compilation-buffer nil t)
   )
 
 (defun elm-test-run ()
@@ -183,7 +183,9 @@ target, otherwise the test."
 
   (let ((default-directory (or (elm-test-run-directory)
                                (elm-test-standard-project-root-for-file (buffer-file-name))
-                               default-directory)))
+                               default-directory))
+        ; unset TERM=dumb to allow colorized output
+        (compilation-environment '("TERM=xterm-256color")))
     (compile
      (elm-test--compile-command target opts)
      'elm-test-compilation-mode)))
@@ -195,6 +197,11 @@ target, otherwise the test."
       (error "No previous verification")
     (let ((default-directory elm-test-last-directory))
       (apply #'elm-test--compile elm-test-last-arguments))))
+
+(defun elm-test-colorize-compilation-buffer ()
+  (toggle-read-only)
+  (ansi-color-apply-on-region compilation-filter-start (point))
+  (toggle-read-only))
 
 (defun elm-test-run-directory (&optional current-file-name)
   (let*
