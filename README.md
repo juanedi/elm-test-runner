@@ -32,7 +32,7 @@ Variable                          | Description | Default value |
 `elm-test-command`                | The base command for `elm-test`. Useful if not installed globally or using Docker, for example | `elm-test` |
 `elm-test-command-options`        | Default options used when running tests for a module | Empty |
 `elm-test-preferred-test-suffix`  | If you put tests for `Foo` in the module `FooSpec`, this should be `Spec` | `Test` |
-`elm-test-run-directory-for-file` | How to find the directory from where to run the command. You probably don't need to change this | The location of the top level `elm-package.json` |
-`elm-test-project-root-for-file`  | How to find the elm project's root directory. You probably don't need to change this. | The location of the top level `elm-package.json` |
+`elm-test-run-directory-for-file` | How to find the directory from where to run the command. You probably don't need to change this | Resolves to the location of the top level `elm-package.json` |
+`elm-test-project-root-for-file`  | How to find the elm project's root directory. You probably don't need to change this. | Resolves to the location of the top level `elm-package.json` |
 
-Both `elm-test-run-directory-for-file` and `elm-test-project-root-for-file` can be either the name or a function or a lambda that receive the current file name as a parameter.
+Both `elm-test-run-directory-for-file` and `elm-test-project-root-for-file` can be either the (quoted) name of a function or a lambda that receive the current file name as a parameter.
