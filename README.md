@@ -1,4 +1,4 @@
-# Emacs elm-test
+# elm-test-el
 
 This package provides some convenience functions for running `elm-test` on your Elm project.
 Most functionality was ported from the fantastic [https://github.com/pezra/rspec-mode](rspec-mode), which is super awesome.

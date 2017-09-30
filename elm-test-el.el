@@ -1,4 +1,4 @@
-;;; elm-test.el --- Enhance elm-mode for elm-test
+;;; elm-test-el.el --- Enhanced support for running elm-test
 
 ;; Copyright (C) 2017  Juan Edi
 
@@ -236,5 +236,5 @@ for elm-test stuff."
                 (list opts))))
     (mapconcat 'identity opts " ")))
 
-(provide 'elm-test)
+(provide 'elm-test-el)
 ;;; elm-test.el ends here
