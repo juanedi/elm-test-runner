@@ -51,6 +51,7 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
 
 (defvar elm-test-run-directory-for-file 'elm-test--standard-project-root-for-file)
 (defvar elm-test-project-root-for-file 'elm-test--standard-project-root-for-file)
+(defvar elm-test-template-for-module 'elm-test--default-template-for-module)
 
 (define-compilation-mode elm-test-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
@@ -125,7 +126,7 @@ target, otherwise the test."
     (if (file-readable-p (file-name-directory file-name))
         (progn
           (write-region
-           (elm-test--test-template (elm-test--test-module-name file-name test-directory))
+           (apply elm-test-template-for-module (list (elm-test--test-module-name file-name test-directory)))
            nil file-name)
           file-name)
         (message "Could not create test module. Directory is not readable."))))
@@ -138,7 +139,7 @@ target, otherwise the test."
     "\.elm$" ""
     (file-relative-name file-name test-directory))))
 
-(defun elm-test--test-template (test-module-name)
+(defun elm-test--default-template-for-module (test-module-name)
   (concat
    "module " test-module-name " exposing (tests)\n"
    "\n"
