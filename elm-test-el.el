@@ -60,14 +60,20 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
 (defun elm-test-run ()
   "Run elm-test on the current buffer's file."
   (interactive)
-  (elm-test--run-single-file
+  (elm-test--run-target
    (buffer-file-name)
+   elm-test-command-options))
+
+(defun elm-test-run-project ()
+  (interactive)
+  (elm-test--run-target
+   (elm-test--test-directory (buffer-file-name))
    elm-test-command-options))
 
 (defun elm-test-watch ()
   "Run elm-test on the current buffer's file in watch mode."
   (interactive)
-  (elm-test--run-single-file
+  (elm-test--run-target
    (buffer-file-name)
    (concat elm-test-command-options " --watch")))
 
@@ -179,7 +185,7 @@ target, otherwise the test."
       a-file-name ;; file has a extension already so do nothing
     (concat a-file-name ".elm")))
 
-(defun elm-test--run-single-file (test-file &rest opts)
+(defun elm-test--run-target (test-file &rest opts)
   "Run elm-test on SPEC_FILE with the specified options OPTS."
   (elm-test--compile (shell-quote-argument test-file) opts))
 
