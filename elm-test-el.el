@@ -98,7 +98,10 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
 If the current buffer is visiting a test file, switches to the
 target, otherwise the test."
   (interactive)
-  (find-file (elm-test--test-or-target)))
+  (let ((matching-file (elm-test--test-or-target)))
+    (if matching-file
+        (find-file (elm-test--test-or-target))
+      (message "Could not find matching module."))))
 
 (defun elm-test--test-or-target ()
   (if (elm-test--buffer-is-test-p)
