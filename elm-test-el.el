@@ -98,15 +98,58 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
 If the current buffer is visiting a test file, switches to the
 target, otherwise the test."
   (interactive)
-  (let ((matching-file (elm-test--test-or-target)))
-    (if matching-file
-        (find-file (elm-test--test-or-target))
-      (message "Could not find matching module."))))
-
-(defun elm-test--test-or-target ()
   (if (elm-test--buffer-is-test-p)
-      (elm-test--target-file-for (buffer-file-name))
-    (elm-test--test-file-for (buffer-file-name))))
+      (elm-test--go-to-matching-target-file (buffer-file-name))
+    (elm-test--go-to-matching-test-file (buffer-file-name))))
+
+(defun elm-test--go-to-matching-target-file (file-name)
+  (let ((matching-target-file (elm-test--target-file-for file-name)))
+    (if matching-target-file
+        (find-file matching-target-file)
+        (message "Could not find matching target file."))))
+
+(defun elm-test--go-to-matching-test-file (file-name)
+  (let* (
+        (matching-test-file (elm-test--test-file-for file-name))
+        (test-directory (elm-test--test-directory file-name))
+        (matching-test-file-exists
+         (or
+          (file-exists-p matching-test-file)
+          (elm-test--offer-create-test-file matching-test-file test-directory))))
+    (if matching-test-file-exists
+        (find-file matching-test-file)
+        (message "Could not find matching target file."))))
+
+(defun elm-test--offer-create-test-file (file-name test-directory)
+  (when (y-or-n-p (concat "File " matching-test-file " does not exist. Create it?"))
+    (if (file-readable-p (file-name-directory file-name))
+        (progn
+          (write-region
+           (elm-test--test-template (elm-test--test-module-name file-name test-directory))
+           nil file-name)
+          file-name)
+        (message "Could not create test module. Directory is not readable."))))
+
+(defun elm-test--test-module-name (file-name test-directory)
+  "Builds the name of the elm module for a test file"
+  (replace-regexp-in-string
+   "/" "."
+   (replace-regexp-in-string
+    "\.elm$" ""
+    (file-relative-name file-name test-directory))))
+
+(defun elm-test--test-template (test-module-name)
+  (concat
+   "module " test-module-name " exposing (tests)\n"
+   "\n"
+   "import Expect\n"
+   "import Test exposing (..)\n"
+   "\n"
+   "\n"
+   "tests : Test\n"
+   "tests = test \"something obvious\" <|\n"
+   "       \\() ->\n"
+   "           Expect.equal 1 1"))
 
 ;;;###autoload
 (defun elm-test--buffer-is-test-p ()
