@@ -110,16 +110,15 @@ target, otherwise the test."
         (message "Could not find matching target file."))))
 
 (defun elm-test--go-to-matching-test-file (file-name)
-  (let* (
-        (matching-test-file (elm-test--test-file-for file-name))
-        (test-directory (elm-test--test-directory file-name))
-        (matching-test-file-exists
-         (or
-          (file-exists-p matching-test-file)
-          (elm-test--offer-create-test-file matching-test-file test-directory))))
+  (let* ((matching-test-file (elm-test--test-file-for file-name))
+         (test-directory (elm-test--test-directory file-name))
+         (matching-test-file-exists
+          (or
+           (file-exists-p matching-test-file)
+           (elm-test--offer-create-test-file matching-test-file test-directory))))
     (if matching-test-file-exists
         (find-file matching-test-file)
-        (message "Could not find matching target file."))))
+      (message "Could not find matching target file."))))
 
 (defun elm-test--offer-create-test-file (file-name test-directory)
   (when (y-or-n-p (concat "File " matching-test-file " does not exist. Create it?"))
