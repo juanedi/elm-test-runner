@@ -70,6 +70,14 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
    (elm-test--test-directory (buffer-file-name))
    elm-test-command-options))
 
+(defun elm-test-run-directory ()
+  (interactive)
+  (let ((selected-dir (elm-test--prompt-directory)))
+    (if selected-dir
+        (elm-test--run-target
+         selected-dir
+         elm-test-command-options))))
+
 (defun elm-test-watch ()
   "Run elm-test on the current buffer's file in watch mode."
   (interactive)
@@ -214,6 +222,11 @@ target, otherwise the test."
       ((starting-point (or current-file-name (buffer-file-name)))
        (root-dir (apply elm-test-run-directory-for-file (list starting-point))))
     (expand-file-name root-dir)))
+
+(defun elm-test--prompt-directory ()
+  (let ((selected-dir (read-directory-name "Test directory: " (file-name-directory buffer-file-name) nil t)))
+    (when (and selected-dir (not (eq selected-dir "")))
+      (replace-regexp-in-string "\\/$" "" selected-dir))))
 
 (defun elm-test--project-root (&optional current-file-name)
   (let*
