@@ -118,17 +118,16 @@ target, otherwise the test."
            (elm-test--offer-create-test-file matching-test-file test-directory))))
     (if matching-test-file-exists
         (find-file matching-test-file)
-      (message "Could not find matching target file."))))
+      (message "Could not find matching target file. Maybe the test directory is not readable?"))))
 
 (defun elm-test--offer-create-test-file (file-name test-directory)
   (when (y-or-n-p (concat "File " matching-test-file " does not exist. Create it?"))
-    (if (file-readable-p (file-name-directory file-name))
-        (progn
-          (write-region
-           (apply elm-test-template-for-module (list (elm-test--test-module-name file-name test-directory)))
-           nil file-name)
-          file-name)
-        (message "Could not create test module. Directory is not readable."))))
+    (when (not (file-readable-p (file-name-directory file-name)))
+      (make-directory (file-name-directory file-name) t))
+    (write-region
+     (apply elm-test-template-for-module (list (elm-test--test-module-name file-name test-directory)))
+     nil file-name)
+    file-name))
 
 (defun elm-test--test-module-name (file-name test-directory)
   "Builds the name of the elm module for a test file"
