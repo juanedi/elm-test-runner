@@ -271,7 +271,7 @@ target, otherwise the test."
 (defun elm-test--prompt-directory ()
   (let ((selected-dir (read-directory-name "Test directory: " (file-name-directory buffer-file-name) nil t)))
     (when (and selected-dir (not (eq selected-dir "")))
-      (replace-regexp-in-string "\\/$" "" selected-dir))))
+      (expand-file-name selected-dir))))
 
 (defun elm-test--project-root (&optional current-file-name)
   (let*
