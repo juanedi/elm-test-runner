@@ -252,7 +252,7 @@ target, otherwise the test."
                                (elm-test--standard-project-root-for-file (buffer-file-name))
                                default-directory))
         ; unset TERM=dumb to allow colorized output
-        (compilation-environment '("TERM=xterm-256color")))
+        (compilation-environment '("TERM=ansi")))
     (compile
      (elm-test--compile-command target opts)
      'elm-test-compilation-mode)))
