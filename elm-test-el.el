@@ -33,8 +33,10 @@
   "elm-test integration"
   :group 'languages)
 
-(defcustom elm-test-command "elm-test"
-  "The command for elm-test."
+(defcustom elm-test-command nil
+  "Use to explicitly set the command that will be used to run elm-test. If nil,
+will try to use a locally installed node runner and fallback to a globally
+installed 'elm-test' executable"
   :type 'string
   :group 'elm-test)
 
@@ -296,9 +298,18 @@ for elm-test stuff."
 
 (defun elm-test--compile-command (target &optional opts)
   "Composes elm-test command line for the compile function"
-  (mapconcat 'identity `(,elm-test-command
+  (mapconcat 'identity `(,(elm-test--runner)
                          ,(elm-test--runner-options opts)
                          ,target) " "))
+
+(defun elm-test--runner ()
+  (or elm-test-command (elm-test--detect-node-runner)))
+
+(defun elm-test--detect-node-runner ()
+  (let ((local-runner-path (concat default-directory "node_modules/.bin/elm-test")))
+    (if (file-readable-p local-runner-path)
+        local-runner-path
+      "elm-test")))
 
 (defun elm-test--runner-options (&optional opts)
   "Return string of options from OPTS for command line."
