@@ -111,41 +111,50 @@ target, otherwise the test."
         (find-file matching-target-file)
         (message "Could not find matching target file."))))
 
-(defun elm-test--go-to-matching-test-file (file-name)
-  (let* ((matching-test-file (elm-test--test-file-for file-name))
-         (test-directory (elm-test--test-directory file-name))
-         (matching-test-file-exists
-          (or
-           (file-exists-p matching-test-file)
-           (elm-test--offer-create-test-file matching-test-file test-directory))))
-    (if matching-test-file-exists
-        (find-file matching-test-file)
+(defun elm-test--go-to-matching-test-file (target-file-name)
+  (let* ((test-directory (elm-test--test-directory target-file-name))
+         (test-file-name (elm-test--test-file-for target-file-name test-directory))
+         (test-file-exists (or (file-exists-p test-file-name)
+                               (elm-test--offer-create-test-file
+                                target-file-name
+                                test-file-name
+                                test-directory))))
+    (if test-file-exists
+        (find-file test-file-name)
       (message "Could not find matching target file. Maybe the test directory is not readable?"))))
 
-(defun elm-test--offer-create-test-file (file-name test-directory)
-  (when (y-or-n-p (concat "File " matching-test-file " does not exist. Create it?"))
-    (when (not (file-readable-p (file-name-directory file-name)))
-      (make-directory (file-name-directory file-name) t))
+(defun elm-test--offer-create-test-file (target-file-name test-file-name test-directory)
+  (when (y-or-n-p (concat "File " test-file-name " does not exist. Create it?"))
+    (when (not (file-readable-p (file-name-directory test-file-name)))
+      (make-directory (file-name-directory test-file-name) t))
     (write-region
-     (apply elm-test-template-for-module (list (elm-test--test-module-name file-name test-directory)))
-     nil file-name)
-    file-name))
+     (apply elm-test-template-for-module
+            (list
+             (elm-test--module-name (file-relative-name test-file-name test-directory))
+             (elm-test--module-name (elm-test--relative-target-file-name target-file-name))))
+     nil test-file-name)
+    test-file-name))
 
-(defun elm-test--test-module-name (file-name test-directory)
-  "Builds the name of the elm module for a test file"
+(defun elm-test--module-name (relative-file-name)
+  "Builds the name of the elm module based on a relative file name"
   (replace-regexp-in-string
    "/" "."
    (replace-regexp-in-string
     "\.elm$" ""
-    (file-relative-name file-name test-directory))))
+    relative-file-name)))
 
-(defun elm-test--default-template-for-module (test-module-name)
-  (let ((entry-point (elm-test--suite-entry-point)))
+(defun elm-test--default-template-for-module (test-module-name target-module-name)
+  (let ((entry-point (elm-test--suite-entry-point))
+        (sorted-imports (sort (list
+                               "import Expect\n"
+                               "import Test exposing (..)\n"
+                               (concat "import " target-module-name " exposing (..)\n")
+                               )
+                              'string<)))
     (concat
      "module " test-module-name " exposing (" entry-point ")\n"
      "\n"
-     "import Expect\n"
-     "import Test exposing (..)\n"
+     (apply 'concat sorted-imports)
      "\n"
      "\n"
      entry-point " : Test\n"
@@ -175,19 +184,24 @@ target, otherwise the test."
             (concat elm-test-preferred-test-suffix "\\.elm\\'")
             a-file-name)))
 
-(defun elm-test--test-file-for (a-file-name)
+(defun elm-test--test-file-for (a-file-name test-directory)
   "Find test for the specified file."
   (if (elm--test-test-file-p a-file-name)
       a-file-name
-    ;; This replace-regex accounts for target-files living in "holder"
-    ;; directories such as "src" (since we don't want that part to appear in the
-    ;; expected test file name).
-    (let ((replace-regex (if (elm-test--target-in-holder-dir-p a-file-name)
-                             "^\\.\\./[^/]+/"
-                           "^\\.\\./"))
-          (relative-file-name (file-relative-name a-file-name (elm-test--test-directory a-file-name))))
-      (elm-test--testize-file-name (expand-file-name (replace-regexp-in-string replace-regex "" relative-file-name)
-                                                 (elm-test--test-directory a-file-name))))))
+    (let*
+        ((relative-file-name (elm-test--relative-target-file-name a-file-name))
+         (file-name-in-test-dir (expand-file-name relative-file-name test-directory)))
+      (elm-test--testize-file-name file-name-in-test-dir))))
+
+(defun elm-test--relative-target-file-name (a-file-name)
+  ;; "Bar.elm"         -> "Bar.elm"
+  ;; "Foo/Bar.elm"     -> "Foo/Bar.elm"
+  ;; "src/Bar.elm"     -> "Bar.elm"
+  ;; "src/Foo/Bar.elm" -> "Foo/Bar.elm"
+  (let ((relative-file-name (file-relative-name a-file-name (elm-test--project-root a-file-name))))
+    (if (elm-test--target-in-holder-dir-p a-file-name)
+        (replace-regexp-in-string "^[^/]+/" "" relative-file-name)
+      relative-file-name)))
 
 (defun elm-test--target-in-holder-dir-p (a-file-name)
   ;; tells if A-FILE-NAME is contained in one of the "well known" source
@@ -229,6 +243,7 @@ target, otherwise the test."
 
 (defun elm-test--testize-file-name (a-file-name)
   "Return A-FILE-NAME but converted in to a test file name."
+  ;; "tests/Foo/Bar.elm"  ->  "tests/Foo/BarTest.elm"
   (concat
    (file-name-directory a-file-name)
    (replace-regexp-in-string

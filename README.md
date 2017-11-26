@@ -44,7 +44,7 @@ Variable                          | Description | Default value |
 All customizable function variables can be either the (quoted) name of a function or a lambda that expect:
   - `elm-test-run-directory-for-file`: current file name
   - `elm-test-project-root-for-file`: current file name
-  - `elm-test-template-for-module` elm module name of the test suite being created
+  - `elm-test-template-for-module` elm module name of the test suite being created and the target module
 
 
 Hint: remember you can use `.dir-locals.el` to customize these settings on a per-project basis. If you do that, you may need to add these values to `safe-local-variable-values` to avoid emacs asking if you trust these values every time.
