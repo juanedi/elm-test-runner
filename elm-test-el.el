@@ -140,17 +140,28 @@ target, otherwise the test."
     (file-relative-name file-name test-directory))))
 
 (defun elm-test--default-template-for-module (test-module-name)
-  (concat
-   "module " test-module-name " exposing (tests)\n"
-   "\n"
-   "import Expect\n"
-   "import Test exposing (..)\n"
-   "\n"
-   "\n"
-   "tests : Test\n"
-   "tests = test \"something obvious\" <|\n"
-   "       \\() ->\n"
-   "           Expect.equal 1 1"))
+  (let ((entry-point (elm-test--suite-entry-point)))
+    (concat
+     "module " test-module-name " exposing (" entry-point ")\n"
+     "\n"
+     "import Expect\n"
+     "import Test exposing (..)\n"
+     "\n"
+     "\n"
+     entry-point " : Test\n"
+     entry-point " =\n"
+     "    describe \"something obvious\"\n"
+     "        [ test \"it works\" <|\n"
+     "            \\() ->\n"
+     "                Expect.equal 1 1\n"
+     "        ]\n")))
+
+(defun elm-test--suite-entry-point ()
+  (if (string= elm-test-preferred-test-suffix "Test")
+      "tests"
+    (let ((first-char (substring elm-test-preferred-test-suffix nil 1))
+          (rest-str   (substring elm-test-preferred-test-suffix 1)))
+      (concat (downcase first-char) rest-str))))
 
 ;;;###autoload
 (defun elm-test--buffer-is-test-p ()
