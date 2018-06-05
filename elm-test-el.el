@@ -19,7 +19,7 @@
 ;;; Commentary:
 
 ;; At least for the moment, this package just sets up a few fuctions to run elm
-;; tests from inside emacs when using elm-mode.
+;; tests from inside Emacs when using elm-mode.
 ;;
 ;; Most of it is just a copy of the fantastic rspec-mode
 ;; (https://github.com/pezra/rspec-mode)
@@ -34,20 +34,18 @@
   :group 'languages)
 
 (defcustom elm-test-command nil
-  "Use to explicitly set the command that will be used to run elm-test. If nil,
-will try to use a locally installed node runner and fallback to a globally
-installed 'elm-test' executable"
+  "Use to explicitly set the command that will be used to run elm-test.
+If nil,will try to use a locally installed node runner and fallback to a globally installed 'elm-test' executable"
   :type 'string
   :group 'elm-test)
 
 (defcustom elm-test-command-options nil
-  "Default options used with elm-test-command."
+  "Default options used with ‘elm-test-command’."
   :type 'string
   :group 'elm-test)
 
 (defcustom elm-test-preferred-test-suffix "Test"
-  "Preferred suffix for test files. Useful if, for example, you prefer the tests
-for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
+  "Preferred suffix for test files. Useful if, for example, you prefer the tests for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
   :type 'string
   :group 'elm-test)
 
@@ -68,12 +66,14 @@ for module 'Foo' to live in 'FooSpecs' instead of 'FooTest'."
    elm-test-command-options))
 
 (defun elm-test-run-project ()
+  "Run elm-test on the whole project."
   (interactive)
   (elm-test--run-target
    (elm-test--test-directory (buffer-file-name))
    elm-test-command-options))
 
 (defun elm-test-run-directory ()
+  "Prompt for a directory on which to run specs."
   (interactive)
   (let ((selected-dir (elm-test--prompt-directory)))
     (if selected-dir
@@ -106,12 +106,14 @@ target, otherwise the test."
     (elm-test--go-to-matching-test-file (buffer-file-name))))
 
 (defun elm-test--go-to-matching-target-file (file-name)
+  "Opens the implementation module corresponding to the specs in FILE-NAME."
   (let ((matching-target-file (elm-test--target-file-for file-name)))
     (if matching-target-file
         (find-file matching-target-file)
         (message "Could not find matching target file."))))
 
 (defun elm-test--go-to-matching-test-file (target-file-name)
+  "Opens the test module corresponding to TARGET-FILE-NAME."
   (let* ((test-directory (elm-test--test-directory target-file-name))
          (test-file-name (elm-test--test-file-for target-file-name test-directory))
          (test-file-exists (or (file-exists-p test-file-name)
@@ -124,6 +126,10 @@ target, otherwise the test."
       (message "Could not find matching target file. Maybe the test directory is not readable?"))))
 
 (defun elm-test--offer-create-test-file (target-file-name test-file-name test-directory)
+  "Asks the user if they want to create a missing test module.
+TARGET-FILE-NAME is the source module for which we're trying to add tests.
+TEST-FILE-NAME is the file name of the module that will be created.
+TEST-DIRECTORY is where we'll add the specs."
   (when (y-or-n-p (concat "File " test-file-name " does not exist. Create it?"))
     (when (not (file-readable-p (file-name-directory test-file-name)))
       (make-directory (file-name-directory test-file-name) t))
@@ -136,7 +142,7 @@ target, otherwise the test."
     test-file-name))
 
 (defun elm-test--module-name (relative-file-name)
-  "Builds the name of the elm module based on a relative file name"
+  "Builds the name of the elm module expeted to be defined in RELATIVE-FILE-NAME."
   (replace-regexp-in-string
    "/" "."
    (replace-regexp-in-string
@@ -144,6 +150,7 @@ target, otherwise the test."
     relative-file-name)))
 
 (defun elm-test--default-template-for-module (test-module-name target-module-name)
+  "The template we'll use when creating TEST-MODULE-NAME, the test suite for TARGET-MODULE-NAME."
   (let ((entry-point (elm-test--suite-entry-point))
         (sorted-imports (sort (list
                                "import Expect\n"
@@ -166,6 +173,8 @@ target, otherwise the test."
      "        ]\n")))
 
 (defun elm-test--suite-entry-point ()
+  "The name of the exported Test instance we'll expose in the template.
+This is computed so that it matches ‘elm-test-preferred-test-suffix’."
   (if (string= elm-test-preferred-test-suffix "Test")
       "tests"
     (let ((first-char (substring elm-test-preferred-test-suffix nil 1))
@@ -174,18 +183,18 @@ target, otherwise the test."
 
 ;;;###autoload
 (defun elm-test--buffer-is-test-p ()
-  "Return true if the current buffer is a test."
+  "Is non-nil if the current buffer is a test."
   (and (buffer-file-name)
        (elm--test-test-file-p (buffer-file-name))))
 
 (defun elm--test-test-file-p (a-file-name)
-  "Return true if the specified A-FILE-NAME is a test."
+  "Is non-nil if the specified A-FILE-NAME is a test."
   (numberp (string-match
             (concat elm-test-preferred-test-suffix "\\.elm\\'")
             a-file-name)))
 
 (defun elm-test--test-file-for (a-file-name test-directory)
-  "Find test for the specified file."
+  "Return the path to the matching test suite for A-FILE-NAME in TEST-DIRECTORY."
   (if (elm--test-test-file-p a-file-name)
       a-file-name
     (let*
@@ -194,18 +203,19 @@ target, otherwise the test."
       (elm-test--testize-file-name file-name-in-test-dir))))
 
 (defun elm-test--relative-target-file-name (a-file-name)
-  ;; "Bar.elm"         -> "Bar.elm"
-  ;; "Foo/Bar.elm"     -> "Foo/Bar.elm"
-  ;; "src/Bar.elm"     -> "Bar.elm"
-  ;; "src/Foo/Bar.elm" -> "Foo/Bar.elm"
+  "Make a A-FILE-NAME's path relative to the source directory.
+Examples:
+  Bar.elm         -> Bar.elm
+  Foo/Bar.elm     -> Foo/Bar.elm
+  src/Bar.elm     -> Bar.elm
+  src/Foo/Bar.elm -> Foo/Bar.elm"
   (let ((relative-file-name (file-relative-name a-file-name (elm-test--project-root a-file-name))))
     (if (elm-test--target-in-holder-dir-p a-file-name)
         (replace-regexp-in-string "^[^/]+/" "" relative-file-name)
       relative-file-name)))
 
 (defun elm-test--target-in-holder-dir-p (a-file-name)
-  ;; tells if A-FILE-NAME is contained in one of the "well known" source
-  ;; directories (that would be only "./src" for the moment)
+  "Tell if A-FILE-NAME is contained in one of the 'well known' source directories (that would be only './src' for the moment)."
   (string-match (concat "^" (concat
                              (regexp-quote (elm-test--project-root a-file-name))
                              "src"
@@ -224,7 +234,7 @@ target, otherwise the test."
              return target)))
 
 (defun elm-test--parent-directory (a-directory)
-  "Returns the directory of which A-DIRECTORY is a child"
+  "Return the directory of which A-DIRECTORY is a child."
   (file-name-directory (directory-file-name a-directory)))
 
 (defun elm-test--root-directory-p (a-directory)
@@ -232,7 +242,7 @@ target, otherwise the test."
   (equal a-directory (elm-test--parent-directory a-directory)))
 
 (defun elm-test--test-directory (a-file)
-  "Return the nearest test directory that could contain tests for A-FILE."
+  "Return the nearest test directory that could contain specs for A-FILE."
   (if (file-directory-p a-file)
       (or
        (car (directory-files a-file t "^tests$"))
@@ -267,7 +277,7 @@ target, otherwise the test."
     (concat a-file-name ".elm")))
 
 (defun elm-test--run-target (test-file &rest opts)
-  "Run elm-test on SPEC_FILE with the specified options OPTS."
+  "Run elm-test on TEST-FILE with the specified options OPTS."
   (elm-test--compile (shell-quote-argument test-file) opts))
 
 (defun elm-test--compile (target &optional opts)
@@ -286,31 +296,41 @@ target, otherwise the test."
      'elm-test-compilation-mode)))
 
 (defun elm-test--colorize-compilation-buffer ()
-  (toggle-read-only)
+  "Interpret ansi colors in the test output buffer."
+  (read-only-mode)
   (ansi-color-apply-on-region compilation-filter-start (point))
-  (toggle-read-only))
+  (read-only-mode))
 
 (defun elm-test--run-directory (&optional current-file-name)
+  "The directory from which the test command will be run.
+Optional argument CURRENT-FILE-NAME the file name of whose project we'll run tests."
   (let*
       ((starting-point (or current-file-name (buffer-file-name)))
        (root-dir (apply elm-test-run-directory-for-file (list starting-point))))
     (expand-file-name root-dir)))
 
 (defun elm-test--prompt-directory ()
+  "Asks the user for a directory on which we'll run specs."
   (let ((selected-dir (read-directory-name "Test directory: " (file-name-directory buffer-file-name) nil t)))
     (when (and selected-dir (not (eq selected-dir "")))
       (expand-file-name selected-dir))))
 
 (defun elm-test--project-root (&optional current-file-name)
+  "The root directory of CURRENT-FILE-NAME's elm project.
+That is, the one with the main elm-package.json. The result of this function
+depends on the value of ‘elm-test-project-root-for-file’."
   (let*
       ((starting-point (or current-file-name (buffer-file-name)))
        (root-dir (apply elm-test-project-root-for-file (list starting-point))))
     (expand-file-name root-dir)))
 
 (defun elm-test--standard-project-root-for-file (current-file-name)
-  "Looks for the root of an elm project. That is, the one with the main elm-package.json
-This assumes a directory structure in which the root contains a 'tests' directory
-for elm-test stuff."
+  "Default implementation for ‘elm-test--project-root’.
+
+This function assumes a standard layout as described in elm-test's
+documentation: the root directory should contain a 'tests' directory for
+elm-test stuff.
+Argument CURRENT-FILE-NAME the file whose Elm project's root we're looking for."
   ;; If we are on a target file, return the first directory we see with an elm-package.json
   ;; If we are on a test file, it's the one above.
   (let*
@@ -323,15 +343,23 @@ for elm-test stuff."
         first-elm-package-dir)))
 
 (defun elm-test--compile-command (target &optional opts)
-  "Composes elm-test command line for the compile function"
+  "Composes the compilation command to run specs for TARGET.
+Optional argument OPTS is a string of command line args that will be passed to the test runner."
   (mapconcat 'identity `(,(elm-test--runner)
                          ,(elm-test--runner-options opts)
                          ,target) " "))
 
 (defun elm-test--runner ()
+  "The command we'll use to run specs.
+
+This can be customized using the ‘elm-test-command’ variable."
   (or elm-test-command (elm-test--detect-node-runner)))
 
 (defun elm-test--detect-node-runner ()
+  "The default way to locate the elm-test binary.
+
+We first check if there is a local installation of the elm-test node package in
+this project. If not, we assume an 'elm-test' binary will be present in the PATH."
   (let ((local-runner-path (concat default-directory "node_modules/.bin/elm-test")))
     (if (file-readable-p local-runner-path)
         local-runner-path
@@ -345,4 +373,4 @@ for elm-test stuff."
     (mapconcat 'identity opts " ")))
 
 (provide 'elm-test-el)
-;;; elm-test.el ends here
+;;; elm-test-el.el ends here
