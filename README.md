@@ -3,10 +3,23 @@
 This package provides some convenience functions for running `elm-test` on your Elm project.
 Most functionality was ported from the fantastic [https://github.com/pezra/rspec-mode](rspec-mode), which is super awesome.
 
+## Installation
+
+### MELPA
+
+If your Emacs has package.el (which is automatically the case for Emacs >= 24), you can install elm-mode from the package in [MELPA](https://melpa.org/).
+
+### From source
+
+Add this repo to your load-path and (require 'elm-test-runner).
+
+### Spacemacs layer
+
+There's [this personal layer](https://github.com/juanedi/elm-test-spacemacs-layer) that I use that sets up the package and adds some keybindings.
 
 ## Usage
 
-The following functions are available:
+The following commands are available:
 
 Function                                     | Description                                                                   |
 ---------------------------------------------|-------------------------------------------------------------------------------|
@@ -17,6 +30,7 @@ Function                                     | Description                      
 `elm-test-runner-run-project`                | Run all tests in the current project                                          |
 `elm-test-runner-run-elm-test-run-directory` | Prompt for a directory to run tests on                                        |
 
+Note that the package doesn't define any keybindings, that's up to you.
 
 When toggling to a test module that doesn't exist yet, you'll be prompted if you want to create it. See below for more information on how to customize the test module template.
 
