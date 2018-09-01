@@ -15,7 +15,9 @@ Add this repo to your load-path and (require 'elm-test-runner).
 
 ### Spacemacs layer
 
-There's [this personal layer](https://github.com/juanedi/elm-test-spacemacs-layer) that I use that sets up the package and adds some keybindings.
+This package is part of the Elm layer of the `develop` branch of Spacemacs.
+
+If you're using `master`, you can use [this personal layer](https://github.com/juanedi/elm-test-spacemacs-layer) directly or as a reference to set up your on configuration.
 
 ## Usage
 
