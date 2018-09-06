@@ -54,6 +54,8 @@ If nil,will try to use a locally installed node runner and fallback to a globall
 (defvar elm-test-runner-run-directory-for-file 'elm-test-runner--standard-project-root-for-file)
 (defvar elm-test-runner-project-root-for-file 'elm-test-runner--standard-project-root-for-file)
 (defvar elm-test-runner-template-for-module 'elm-test-runner--default-template-for-module)
+(defvar elm-test-runner--last-arguments)
+(defvar elm-test-runner--last-directory)
 
 (define-compilation-mode elm-test-runner-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
