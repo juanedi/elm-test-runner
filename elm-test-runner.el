@@ -61,6 +61,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
   "Compilation mode for elm-test output."
   (add-hook 'compilation-filter-hook 'elm-test-runner--colorize-compilation-buffer nil t))
 
+;;;###autoload
 (defun elm-test-runner-run ()
   "Run elm-test on the current buffer's file."
   (interactive)
@@ -68,6 +69,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
    (buffer-file-name)
    elm-test-runner-command-options))
 
+;;;###autoload
 (defun elm-test-runner-run-project ()
   "Run elm-test on the whole project."
   (interactive)
@@ -75,6 +77,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
    (elm-test-runner--test-directory (buffer-file-name))
    elm-test-runner-command-options))
 
+;;;###autoload
 (defun elm-test-runner-run-directory ()
   "Prompt for a directory on which to run specs."
   (interactive)
@@ -84,6 +87,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
          selected-dir
          elm-test-runner-command-options))))
 
+;;;###autoload
 (defun elm-test-runner-watch ()
   "Run elm-test on the current buffer's file in watch mode."
   (interactive)
@@ -91,6 +95,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
    (buffer-file-name)
    (concat elm-test-runner-command-options " --watch")))
 
+;;;###autoload
 (defun elm-test-runner-rerun ()
   "Re-run the last elm-test invocation."
   (interactive)
@@ -99,6 +104,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
     (let ((default-directory elm-test-runner--last-directory))
       (apply #'elm-test-runner--compile elm-test-runner--last-arguments))))
 
+;;;###autoload
 (defun elm-test-runner-toggle-test-and-target ()
   "Switch to the test or the target file for the current buffer.
 If the current buffer is visiting a test file, switches to the
