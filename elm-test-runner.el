@@ -59,8 +59,7 @@ If nil,will try to use a locally installed node runner and fallback to a globall
 
 (define-compilation-mode elm-test-runner-compilation-mode "Elm Test Compilation"
   "Compilation mode for elm-test output."
-  (add-hook 'compilation-filter-hook 'elm-test-runner--colorize-compilation-buffer nil t)
-  )
+  (add-hook 'compilation-filter-hook 'elm-test-runner--colorize-compilation-buffer nil t))
 
 (defun elm-test-runner-run ()
   "Run elm-test on the current buffer's file."
@@ -320,7 +319,7 @@ Optional argument CURRENT-FILE-NAME the file name of whose project we'll run tes
 
 (defun elm-test-runner--project-root (&optional current-file-name)
   "The root directory of CURRENT-FILE-NAME's elm project.
-That is, the one with the main elm-package.json. The result of this function
+That is, the one with the elm.json file. The result of this function
 depends on the value of ‘elm-test-runner-project-root-for-file’."
   (let*
       ((starting-point (or current-file-name (buffer-file-name)))
@@ -334,6 +333,18 @@ This function assumes a standard layout as described in elm-test's
 documentation: the root directory should contain a 'tests' directory for
 elm-test stuff.
 Argument CURRENT-FILE-NAME the file whose Elm project's root we're looking for."
+  (or
+   (elm-test-runner--standard-elm-19-project-root-for-file current-file-name)
+   (elm-test-runner--standard-elm-18-project-root-for-file current-file-name)))
+
+(defun elm-test-runner--standard-elm-19-project-root-for-file (current-file-name)
+  "Detect project root for a standard elm 19 project.
+Argument CURRENT-FILE-NAME the file whose Elm project's root we're looking for."
+  (locate-dominating-file current-file-name "elm.json"))
+
+(defun elm-test-runner--standard-elm-18-project-root-for-file (current-file-name)
+  "Detect project root for a standard elm 18 project.
+Argument CURRENT-FILE-NAME the file whose Elm project's root we're looking for."
   ;; If we are on a target file, return the first directory we see with an elm-package.json
   ;; If we are on a test file, it's the one above.
   (let*
@@ -343,7 +354,7 @@ Argument CURRENT-FILE-NAME the file whose Elm project's root we're looking for."
 
     (if parent-dir-elm-package
         parent-dir
-        first-elm-package-dir)))
+      first-elm-package-dir)))
 
 (defun elm-test-runner--compile-command (target &optional opts)
   "Composes the compilation command to run specs for TARGET.
