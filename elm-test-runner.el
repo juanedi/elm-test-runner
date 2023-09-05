@@ -30,6 +30,7 @@
 
 (require 'compile)
 (require 'ansi-color)
+(require 'cl-lib)
 
 (defgroup elm-test nil
   "elm-test integration"
